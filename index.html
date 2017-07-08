@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8"/>
+    <title>A Secretária está na Secretaria?</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link href="https://fonts.googleapis.com/css?family=Fresca" rel="stylesheet">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+    <script>
+      console.log("Bem vindo");
+      // Initialize Firebase
+      var config = {
+        apiKey: "AIzaSyC3k6GIQ3rn_AU5J5rk3bXFRgQAC_DKy8k",
+        authDomain: "esta-trabalhando.firebaseapp.com",
+        databaseURL: "https://esta-trabalhando.firebaseio.com",
+        projectId: "esta-trabalhando",
+        storageBucket: "esta-trabalhando.appspot.com",
+        messagingSenderId: "507160797597"
+      };
+      firebase.initializeApp(config);
+
+      var db = firebase.database();
+      var ref = db.ref("/statusAtual");
+
+      var statusAtual;
+
+      // Get the data on a post that has changed
+      ref.on("child_changed", function(snapshot) {
+        receiveStats();
+      });
+
+
+      function receiveStats(){
+        console.log("Recebendo status atual");
+        ref.once("value", function(data) {
+          statusAtual = data.val();
+          statusAtual.horario = new Date(statusAtual.horario);
+        }).then(
+          function(){
+            console.log("Recebeu: A secretaria está? " + statusAtual.esta + " hora: " + statusAtual.horario );
+            var diferenca = new Date() - statusAtual.horario;
+            if(diferenca*2.77778e-7 >= 20){
+              alert("Sem dados do dia de hoje :()");
+              ref.update({
+                "esta": null,
+                "horario":null
+              });
+            }
+            updateScreenStats();
+          },
+          function(){
+            alert("erro");
+          });
+      }
+
+      function sendStats(disponivel){
+        //var status = usersRef.child("gracehop");
+        var horario = new Date().toGMTString();
+        ref.update({
+          "esta": disponivel,
+          "horario":horario
+        });
+      }
+
+      function updateScreenStats(){
+        var data = statusAtual.horario;
+
+        if(statusAtual.esta){
+          console.log("Esta disponivel");
+          document.getElementById("naostatus").style.visibility="hidden";
+          document.getElementById("simstatus").style.visibility="visible";
+          document.getElementById("timeS").innerHTML = data.getDate() + " do " + data.getMonth() + ", às " + data.getHours() + ":" + data.getMinutes();
+        }
+        else{
+          document.getElementById("simstatus").style.visibility="hidden";
+          document.getElementById("naostatus").style.visibility="visible";
+          document.getElementById("timeN").innerHTML = data.getDate() + " do " + data.getMonth() + ", às " + data.getHours() + ":" + data.getMinutes();
+        }
+
+
+      }
+
+      receiveStats();
+
+    </script>
+
+  </head>
+  <body>
+  	<div class="content">
+        <div class='top'>
+          <h1>A Secretária está na Secretaria?</h1>
+          <div class="status">
+            <div class="succes" id="simstatus" style="visibility:hidden">
+              Sim!
+              <br>
+              <div class="subtitle">Informação atualizada em: <span id="timeS"> </span>...</div>
+            </div>
+
+            <div class="error" id="naostatus"  style="visibility: hidden">
+              Não!
+              <br>
+              <div class="subtitle">Informação atualizada em: <span id="timeN"> </span>...</div>
+            </div>
+
+          </div>
+          </div><br/>
+        </div>
+
+        <div class="menu">
+            Atualize status:
+            <div class="opc" >
+              <div class="btOk" id="simbt">
+                Sim
+              </div>
+              <div class="btErr" id="naobt">
+                Não
+              </div>
+            </div>
+        </div>
+    </div>
+
+  <script>
+    document.getElementById("simbt").addEventListener("click", function(){
+      console.log("Clicou sim");
+      sendStats(true);
+    });
+
+    document.getElementById("naobt").addEventListener("click", function(){
+      sendStats(false);
+    });
+  </script>
+  </body>
+</html>
