@@ -83,6 +83,14 @@ h1{
 .subtitle{
   text-align: right;
   font-weight: normal;
-  font-size: 2vw;
+  font-size: 4vw;
   right:1vw;
+}
+
+#anuncio{
+  position: absolute;
+  width:360px;
+  height:70px;
+  left:0;
+  bottom:0;
 }
